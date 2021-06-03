@@ -1,0 +1,10 @@
+site_name: napari-pysero
+site_description: A simple plugin to use with napari
+site_author: Lena Blackmon
+
+theme: readthedocs
+
+repo_url: https://github.com/lenafb/napari-pysero
+
+pages:
+- Home: index.md
