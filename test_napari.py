@@ -28,7 +28,7 @@ def create_points(unit_w,unit_h):
     i = 0
     for i in range(len(row_coord)):
         for j in range(len(col_coord)):
-            xlist.append([row_coord[i],col_coord[j]])
+            xlist.append([row_coord[i]+95,col_coord[j]+130]) ## is this avg_len? make this scaleable or fix image to be more consistent
         i = i+1
     #adding points    
     points = np.reshape(xlist,(96,2))
@@ -96,12 +96,12 @@ def wells2image(selection): #input is not perfect, selection is redundantly call
     
         return send2nautilus
 
-im_path = '/Users/lena.blackmon/napari-pysero/napari_pysero/96well.jpeg' # path to plate template
+im_path = '/Users/lena.blackmon/napari-pysero/napari_pysero/96well_background_intermediaryfix.jpeg' # path to plate template
 pl_temp = imread(im_path)
 viewer = napari.view_image(pl_temp, rgb=True)
 
 points = create_points(unit_w=1906/12,unit_h=1249/8)
-points_layer = viewer.add_points(points, size=30) #editable = False ; setting ndim=3 effectively does this as well
+points_layer = viewer.add_points(points, size=5) #editable = False ; setting ndim=3 effectively does this as well
 
 shapes_layer = viewer.add_shapes(
         face_color='transparent',
@@ -133,13 +133,13 @@ def click_drag(layer, event):
     # on release
     if dragged:
         selectionn = shapes_layer.data
+        napari_write_shapes()       ####### THIS does not work
         print(selectionn) 
         
         #insert calculations
         #send2nautilus = wells2image(selectionn)
         #selection = shapes_layer.data
         #send2nautilus = wells2image(selection)
-        napari_write_shapes()       ####### THIS WORKS
         shapes_layer.mode = 'select'
         #return send2nautilus
         
@@ -149,6 +149,111 @@ def click_drag(layer, event):
 
 from PyQt5.QtWidgets import *
 import sys
+
+
+class SelectionWindow(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        layout = QGridLayout()
+        self.setLayout(layout)
+        ###### HOW TO IMPLEMENT WELLS2IMAGE
+        # convert .txt to numpy array
+        
+
+        #label
+        layout.addWidget(QLabel("Make selection?"))
+        
+        # #list
+        # self.listwidget = QListWidget()
+        # i = 0
+        # for i in range(len(self.send2nautilus)): #check whether this accurately indexes
+        #     self.listwidget.insertItem(i, self.send2nautilus[i])
+        # self.listwidget.clicked.connect(self.clicked)
+        # layout.addWidget(self.listwidget)
+        #button
+        
+        
+        self.yesb = QPushButton('yes')
+        layout.addWidget(self.yesb)
+        self.yesb.clicked.connect(self.on_click) ########
+        
+        
+        self.no_button = QPushButton('no')
+        layout.addWidget(self.no_button)
+        self.no_button.clicked.connect(self.close_napari_pysero)
+        
+        #qbtn.clicked.connect()
+        #integrate magicgui mouse callback?
+        
+    def on_click(self,qmodelindex):              ############## THIS HAS WORKED
+        #if self.ok_button.isChecked():
+        #item = self.ok_button.currentItem()    
+        #print('text')
+        # selection = np.load('shapez.npy')
+        # self.send2nautilus = wells2image(selection)
+        viewer.window.add_dock_widget(Window())
+        
+    
+    def close_napari_pysero(self,qmodelindex):
+        viewer.close()
+    
+        
+    # def clicked(self, qmodelindex):
+    #     item = self.listwidget.currentItem()
+    #     print(item.text())
+
+
+class MetadataWindow(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
+        layout = QGridLayout()
+        self.setLayout(layout)
+        ###### HOW TO IMPLEMENT WELLS2IMAGE
+        # convert .txt to numpy array
+        
+
+        #label
+        layout.addWidget(QLabel("Make selection?"))
+        
+        # #list
+        # self.listwidget = QListWidget()
+        # i = 0
+        # for i in range(len(self.send2nautilus)): #check whether this accurately indexes
+        #     self.listwidget.insertItem(i, self.send2nautilus[i])
+        # self.listwidget.clicked.connect(self.clicked)
+        # layout.addWidget(self.listwidget)
+        #button
+        
+        
+        self.yesb = QPushButton('yes')
+        layout.addWidget(self.yesb)
+        self.yesb.clicked.connect(self.on_click) ########
+        
+        
+        self.no_button = QPushButton('no')
+        layout.addWidget(self.no_button)
+        self.no_button.clicked.connect(self.close_napari_pysero)
+        
+        #qbtn.clicked.connect()
+        #integrate magicgui mouse callback?
+        
+    def on_click(self,qmodelindex):              ############## THIS HAS WORKED
+        #if self.ok_button.isChecked():
+        #item = self.ok_button.currentItem()    
+        #print('text')
+        # selection = np.load('shapez.npy')
+        # self.send2nautilus = wells2image(selection)
+        viewer.window.add_dock_widget(Window())
+        
+    
+    def close_napari_pysero(self,qmodelindex):
+        viewer.close()
+    
+        
+    # def clicked(self, qmodelindex):
+    #     item = self.listwidget.currentItem()
+    #     print(item.text())
+
 
 class Window(QWidget):
     def __init__(self):
@@ -206,6 +311,6 @@ class Window(QWidget):
         print(item.text())
         
 
-viewer.window.add_dock_widget(Window())
+viewer.window.add_dock_widget(SelectionWindow())
 
 napari.run()
